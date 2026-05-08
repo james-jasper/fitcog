@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
-
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD
+import { useApp } from '../App'
 
 const PLANS = [
   { id: 'basic', name: 'Starter', sessions: 12, price: 8000 },
@@ -10,10 +8,7 @@ const PLANS = [
 ]
 
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(false)
-  const [email, setEmail] = useState('')
-  const [pass, setPass] = useState('')
-  const [loginError, setLoginError] = useState('')
+  const { logoutAdmin } = useApp()
 
   const [trainers, setTrainers] = useState([])
   const [trainerForm, setTrainerForm] = useState({ name: '', username: '', password: '', specialization: '', max_capacity: 1 })
@@ -37,12 +32,12 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
-    if (authed) fetchTrainers()
-  }, [authed])
+    fetchTrainers()
+  }, [])
 
   useEffect(() => {
-    if (authed && activeTab === 'users') fetchUsers()
-  }, [authed, activeTab])
+    if (activeTab === 'users') fetchUsers()
+  }, [activeTab])
 
   const fetchUsers = async () => {
     setUsersLoading(true)
@@ -61,16 +56,6 @@ export default function AdminPage() {
   const fetchTrainers = async () => {
     const { data } = await supabase.from('trainers').select('*').order('created_at', { ascending: true })
     if (data) setTrainers(data)
-  }
-
-  const handleAdminLogin = (e) => {
-    e.preventDefault()
-    if (email.trim().toLowerCase() === ADMIN_EMAIL && pass === ADMIN_PASSWORD) {
-      setAuthed(true)
-      setLoginError('')
-    } else {
-      setLoginError('Invalid admin credentials')
-    }
   }
 
   // Activate subscription for a user by email
@@ -142,32 +127,6 @@ export default function AdminPage() {
 
   const togglePassword = (id) => setShowPasswords(prev => ({ ...prev, [id]: !prev[id] }))
 
-  // Login screen
-  if (!authed) return (
-    <div style={{ minHeight: '100vh', background: 'var(--black)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Sans, sans-serif' }}>
-      <div style={{ width: 380, background: 'var(--dark)', border: '1px solid var(--border)', borderRadius: 16, padding: 48 }}>
-        <div style={{ fontFamily: 'Bebas Neue', fontSize: 14, letterSpacing: 4, color: 'var(--accent)', marginBottom: 8 }}>FITCOG</div>
-        <div style={{ fontFamily: 'Bebas Neue', fontSize: 36, letterSpacing: 3, marginBottom: 8, color: 'var(--text)' }}>Admin Access</div>
-        <div style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 32 }}>Restricted area — admin credentials required</div>
-        <form onSubmit={handleAdminLogin}>
-          <div className="form-group">
-            <label className="form-label">Admin Email</label>
-            <input className="form-input" type="email" placeholder="admin@fitcog.com" value={email} onChange={e => setEmail(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input className="form-input" type="password" placeholder="••••••••••••" value={pass} onChange={e => setPass(e.target.value)} required />
-          </div>
-          {loginError && <div className="error-msg" style={{ marginBottom: 12 }}>{loginError}</div>}
-          <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>Access Admin Panel</button>
-        </form>
-        <div style={{ marginTop: 24, textAlign: 'center' }}>
-          <a href="/" style={{ color: 'var(--muted)', fontSize: 13, textDecoration: 'none' }}>← Back to App</a>
-        </div>
-      </div>
-    </div>
-  )
-
   return (
     <div className="admin-page" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 32 }}>
@@ -177,7 +136,7 @@ export default function AdminPage() {
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <a href="/"><button className="btn btn-outline btn-sm">← App</button></a>
-          <button className="btn btn-outline btn-sm" onClick={() => setAuthed(false)}>Logout</button>
+          <button className="btn btn-outline btn-sm" onClick={logoutAdmin}>Logout</button>
         </div>
       </div>
 
