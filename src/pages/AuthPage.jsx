@@ -2,8 +2,6 @@ import { useState, useRef } from 'react'
 import { supabase } from '../supabase'
 import { useApp } from '../App'
 
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD
 
 const GOOGLE_SVG = (
   <svg width="18" height="18" viewBox="0 0 48 48">
@@ -175,19 +173,27 @@ function TrainerForm({ setTrainer }) {
 }
 
 function AdminForm({ setAdmin }) {
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const emailRef = useRef()
   const passwordRef = useRef()
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
-    setError('')
-    if (emailRef.current.value.trim().toLowerCase() === ADMIN_EMAIL && passwordRef.current.value === ADMIN_PASSWORD) {
+    setLoading(true); setError('')
+    const { data, error: err } = await supabase
+      .from('admins')
+      .select('id')
+      .eq('email', emailRef.current.value.trim().toLowerCase())
+      .eq('password', passwordRef.current.value)
+      .limit(1)
+    if (err || !data || data.length === 0) {
+      setError('Invalid admin credentials')
+    } else {
       sessionStorage.setItem('fitcog_admin', '1')
       setAdmin(true)
-    } else {
-      setError('Invalid admin credentials')
     }
+    setLoading(false)
   }
 
   return (
@@ -204,8 +210,8 @@ function AdminForm({ setAdmin }) {
           <input className="form-input" type="password" placeholder="••••••••••••" ref={passwordRef} required />
         </div>
         {error && <div className="error-msg">{error}</div>}
-        <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: 8 }}>
-          Access Admin Panel
+        <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: 8 }} disabled={loading}>
+          {loading ? 'Signing in...' : 'Access Admin Panel'}
         </button>
       </form>
     </>
