@@ -101,7 +101,7 @@ function MemberForm() {
           <form onSubmit={handleSignUp}>
             <div className="form-group">
               <label className="form-label">Full Name</label>
-              <input className="form-input" type="text" placeholder="James Jasper" ref={nameRef} required />
+              <input className="form-input" type="text" placeholder="Your full name" ref={nameRef} required />
             </div>
             <div className="form-group">
               <label className="form-label">Email</label>
