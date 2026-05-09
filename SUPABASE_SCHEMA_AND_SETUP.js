@@ -66,4 +66,16 @@ CREATE POLICY "Users can insert own bookings" ON bookings FOR INSERT WITH CHECK 
 CREATE POLICY "Anyone can see trainers" ON trainers FOR SELECT USING (true);
 CREATE POLICY "Anyone can see all bookings for slot check" ON bookings FOR SELECT USING (true);
 
+-- Admin: delete a user and all their data (profiles/subscriptions/bookings cascade automatically)
+-- Run this in Supabase SQL editor
+CREATE OR REPLACE FUNCTION delete_user(p_user_id UUID)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  DELETE FROM auth.users WHERE id = p_user_id;
+END;
+$$;
+
 */

@@ -53,6 +53,14 @@ export default function AdminPage() {
     setUsersLoading(false)
   }
 
+  const handleRemoveUser = async (user) => {
+    if (!confirm(`Remove "${user.full_name || user.email}"? This will permanently delete their account, subscription, and all bookings.`)) return
+    const { error } = await supabase.rpc('delete_user', { p_user_id: user.id })
+    if (error) { showToast(error.message, 'error'); return }
+    showToast(`${user.full_name || user.email} removed`, 'error')
+    setUsers(prev => prev.filter(u => u.id !== user.id))
+  }
+
   const fetchTrainers = async () => {
     const { data } = await supabase.from('trainers').select('*').order('created_at', { ascending: true })
     if (data) setTrainers(data)
@@ -252,19 +260,22 @@ export default function AdminPage() {
                         </div>
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      {activeSub ? (
-                        <>
-                          <span className="badge badge-confirmed" style={{ marginBottom: 4, display: 'inline-block' }}>
-                            {activeSub.plan === 'basic' ? 'Starter' : 'Premium'}
-                          </span>
-                          <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-                            {sessionsLeft} sessions left · {activeSub.sessions_used}/{activeSub.total_sessions} used
-                          </div>
-                        </>
-                      ) : (
-                        <span className="badge badge-cancelled">No Plan</span>
-                      )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                      <div style={{ textAlign: 'right' }}>
+                        {activeSub ? (
+                          <>
+                            <span className="badge badge-confirmed" style={{ marginBottom: 4, display: 'inline-block' }}>
+                              {activeSub.plan === 'basic' ? 'Starter' : 'Premium'}
+                            </span>
+                            <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                              {sessionsLeft} sessions left · {activeSub.sessions_used}/{activeSub.total_sessions} used
+                            </div>
+                          </>
+                        ) : (
+                          <span className="badge badge-cancelled">No Plan</span>
+                        )}
+                      </div>
+                      <button className="btn btn-danger btn-sm" onClick={() => handleRemoveUser(u)}>Remove</button>
                     </div>
                   </div>
                 )
