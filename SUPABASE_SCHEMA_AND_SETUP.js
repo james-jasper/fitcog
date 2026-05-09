@@ -86,7 +86,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-  UPDATE bookings SET status = 'cancelled' WHERE trainer_id = p_trainer_id;
+  UPDATE bookings SET status = 'cancelled', trainer_id = NULL WHERE trainer_id = p_trainer_id;
   DELETE FROM trainers WHERE id = p_trainer_id;
 END;
 $$;
