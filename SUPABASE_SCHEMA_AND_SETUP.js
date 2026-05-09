@@ -78,4 +78,17 @@ BEGIN
 END;
 $$;
 
+-- Admin: cancel trainer's bookings then delete trainer (bypasses RLS)
+-- Run this in Supabase SQL editor
+CREATE OR REPLACE FUNCTION delete_trainer(p_trainer_id UUID)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE bookings SET status = 'cancelled', trainer_id = NULL WHERE trainer_id = p_trainer_id;
+  DELETE FROM trainers WHERE id = p_trainer_id;
+END;
+$$;
+
 */
