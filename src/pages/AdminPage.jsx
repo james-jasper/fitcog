@@ -127,7 +127,8 @@ export default function AdminPage() {
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this trainer? Their bookings will remain.')) return
+    if (!confirm('Delete this trainer? Their bookings will be cancelled.')) return
+    await supabase.from('bookings').update({ status: 'cancelled' }).eq('trainer_id', id)
     const { error } = await supabase.from('trainers').delete().eq('id', id)
     if (error) showToast(error.message, 'error')
     else { showToast('Trainer deleted', 'error'); fetchTrainers() }
